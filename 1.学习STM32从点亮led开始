@@ -1,0 +1,171 @@
+                                                         STM32C8T6-点亮第一个发光二极管
+1.首先给大家解释两个专业术语：端口和 I/O 引脚。端口：是指具有相同地址的（8/16/32)位 I/O 引脚，可以进行读写访问的。访问端口时也可以（8/16/32)位一次性访问。引脚：可以特指 CPU 的任意一位管脚，其中也可以指端口中包含
+  的某一位引脚。端口是从功能上描述单片机，引脚是从电路原理上描述单片机。这就是为什么我们说要测哪个引脚的电压，而不是哪个端口的电压。STM32的GPIO端口配置比以前我们学习51单片机时要复杂的多。
+  就是因为复杂，所以 STM32 的 GPIO 端口配置更灵活，更能适合不同的应用需求。STM32 有 7 个 GPIO 端口，可分为 GPIOA、GPIOB、GPIOC、GPIOD、GPIOE、GPIOF、GPIOG。每个端口又包含了 0~15 共 16 个不同的引脚。
+  对于不同型号的 STM32 芯片，端口的个数和引脚的数量不同，具体请参考相应芯片型号的手册。
+2.STM32 的 I/O 引脚可以由软件配置成如下 8 种模式：
+              1、输入浮空
+              2、输入上拉
+              3、输入下拉
+              4、模拟输入
+              5、开漏输出
+              6、推挽输出
+              7、推挽式复用功能
+              8、开漏复用功能
+3.每个 I/O 引脚都可以独立的配置。 STM32 的很多 I/O 引脚都是兼容 5V 电平，这些 I/O 引脚在与 5V 电平外设连接的时候很有优势，具体哪些 I/O 引脚是兼容 5V 电平，可以从该芯片的数据手册端口描
+  述章节查到（I/O Level 标 FT 的就是兼容 5V 电平的）。由于我们整套视频教程与书籍都是采用库函数的方法编程序的，所以大家不用考虑怎样通过设置寄存器来配置 I/O 引脚，我们只要掌握怎样调用库
+  函数文件中函数，来配置 I/O 引脚初始化就可以了。
+4.GPIO 引脚配置函数 GPIO_Init
+      函数名 GPIO_Init
+      函数原形   void GPIO_Init(GPIO_TypeDef* GPIOx, GPIO_InitTypeDef*GPIO_InitStruct)
+      功能描述   根据 GPIO_InitStruct 中指定的参数初始化外设 GPIOx 寄存器
+      输入参数 1 GPIOx：x 可以是 A，B，C，D 或者 E，来选择 GPIO 外设
+      输入参数 2 GPIO_InitStruct：指向结构 GPIO_InitTypeDef 的指针，包
+      含了外设   GPIO 的配置信息. 输出参数 无
+      返回值     无
+      先决条件   无
+      被调用函数 无
+5.第二个参数结构体的原型如下。
+      typedef struct
+      {
+      uint16_t GPIO_Pin;
+      GPIOSpeed_TypeDef GPIO_Speed;
+      GPIOMode_TypeDef GPIO_Mode;
+      }GPIO_InitTypeDef;
+      
+5.参数 GPIO_Pin该参数选择待设置的 GPIO 引脚，使用操作符“|”可以一次选中多个引脚。可以使用下表中的任意组合。
+              GPIO_Pin                  描述
+              GPIO_Pin_None             无引被选中
+              GPIO_Pin_0                选中引脚 0
+              GPIO_Pin_1                选中引脚 1
+              GPIO_Pin_2                选中引脚 2
+              GPIO_Pin_3                选中引脚 3
+              GPIO_Pin_4                选中引脚 4
+              GPIO_Pin_5                选中引脚 5
+              GPIO_Pin_6                选中引脚 6
+              GPIO_Pin_7                选中引脚 7
+              GPIO_Pin_8                选中引脚 8
+              GPIO_Pin_9                选中引脚 9
+              GPIO_Pin_10               选中引脚 10
+              GPIO_Pin_11               选中引脚 11
+              GPIO_Pin_12               选中引脚 12
+              GPIO_Pin_13               选中引脚 13
+              GPIO_Pin_14               选中引脚 14
+              GPIO_Pin_15               选中引脚 15
+              GPIO_Pin_All              选中全部引脚
+6.参数 GPIO_Speed
+              GPIO_Speed 用以设置选中引脚的速率。
+              GPIO_Speed 描述
+              GPIO_Speed_10MHz 最高输出速率 10MHz
+              GPIO_Speed_2MHz 最高输出速率 2MHz
+              GPIO_Speed_50MHz 最高输出速率 50MHz
+7.参数 GPIO_Mode
+              GPIO_Mode 用以设置选中管脚的工作状态。
+              GPIO_Speed 描述
+              GPIO_Mode_AIN 模拟输入
+              GPIO_Mode_IN_FLOATING 浮空输入
+              GPIO_Mode_IPD 下拉输入
+              GPIO_Mode_IPU 上拉输入
+              GPIO_Mode_Out_OD 开漏输出
+              GPIO_Mode_Out_PP 推挽输出
+              GPIO_Mode_AF_OD 复用开漏输出
+              GPIO_Mode_AF_PP 复用推挽输出   
+8.PB5 引脚配置函数如下：
+              GPIO_InitTypeDef GPIO_InitStructure;
+              GPIO_InitStructure.GPIO_Pin=GPIO_Pin_5;
+              GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+              GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;
+              GPIO_Init(GPIOB,&GPIO_InitStructure);
+9.结构体定义： 结构体(struct)是由一系列具有相同类型或不同类型的数据构成的数据集合，也叫结构。是一种聚合类型，里面可以包含多种数据类型，甚至可以结构体里嵌套结构体。在实际项目中，结构体是
+大量存在的。研发人员常使用结构体来封装一些属性来组成新的类型。结构体在函数中的作用不是简便，其最主要的作用就是封装。封装的好处就是可以再次利用。让使用者不必关心这个是什么，只要根据定义使用就可以了。
+就上边的例子，首先要定义一个结构体变量,结构体为GPIO_InitTypeDef，定义的结构体变量为 GPIO_InitStructure，大家要注意结构体和结构体变量的区别。这个结构体变量中包括了 3 个STM32 开发板用户使用手册分别是 GPIO_Pin、GPIO_Speed 和 GPIO_Mode。由于我们这节实验用的 I/O 引脚是 PB5,所以 GPIO_Pin=GPIO_Pin_5。引脚速率可以
+任意选择一个，在这里我们选择的是GPIO_Speed=GPIO_Speed_50MHz，如果对引脚的输出速率没有要求，那么在干扰很强的环境中运行，可以降低引脚的速率使系统更加稳定。引脚的工作状态我们选择的是推
+挽输出模式 GPIO_Mode=GPIO_Mode_Out_PP。当我们把这些参数都配置好以后就可以通过 GPIO_Init 来对端口初始化了。
+10.硬件设计
+大黄蜂 STM32 开发板上有 3 个 LED 发光二极管指示灯，PCB 线路板上的标号分别是D1、D2、D3。与原理图对应的标号是(91.PB5-LED1)、(87.PD6-LED2)、(84.PD3-LED3)。原理图上标号的命名规则如下，
+我们以 D1 发光二极管为例说明：MCU 芯片管脚序号(91)+I/O 引脚(PB5)+功能标号(LED1)
+图原理图与 PCB 线路板上已经都连接好了，大家不用自己再连接（直接把程序下载到大黄蜂 STM32 开发板上运行就可以了。
+                      STM32 库函数文件
+                      stm32f10x_gpio.c
+                      stm32f10x_rcc.c
+                      本节实验我们主要用到的库文件，其中 stm32f10x_gpio.h 头文件包含了 GPIO 端口的定义。stm32f10x_rcc.h 头文件包含了系统时钟配置函数以及相关的外设时钟使能函数，所以我们要把这两个头文
+                      件对应的 stm32f10x_gpio.c 和 stm32f10x_rcc.c 都加到工程中。
+                      自定义头文件
+                      pbdata.h
+                      pbdata.c
+                      同时我们自己也创建了两个公共的文件，这两个文件主要存放我
+                      们自定义的公共函数和全局变量，以方便以后每个功能模块之间传递
+                      参数。
+                      pbdata.h 文件里的内容是
+                      #ifndef _pbdata_H
+                      #define _pbdata_H
+                      #include "stm32f10x.h"
+                      void delay(u32 nCount);//延时函数
+                      #endif
+                      语句 #ifndef、#endif 是为了防止 pbdata.h 文件被多个文件调
+                      用时出现错误提示。如果不加这两条语句，当两个文件同时调用
+                      pbdata 文件时，会提示重复调用错误。 stm32f10x.h 头文件是我们
+                      每个工程都需要调用的，里面包括了 STM32 内部寄存器地址的定义。
+                      pbdata.c 文件里的内容是
+                      #include "pbdata.h" //别忘了引用这个头文件
+                      //延时程序
+                      void delay(u32 nCount)
+                      {
+                      for(;nCount!=0;nCount--);
+                      }
+                      delay 延时函数可以通过很多种方法实现，由于本节实验对延时
+                      的精度要求不高，所以我们就采用了 51 单片机的延时方法。主要就
+                      是通过 for 循环占据 CPU 的处理时间最终达到延时的目的。
+                      STM32 系统时钟配置 SystemInit()
+                      每个工程都必须在开始时配置并启动 STM32 系统时钟。关于
+                      STM32 系统时钟我们在前面的章节中已经详细的说明了，在这里就不
+                      再叙述了。
+                       GPIO 引脚时钟使能
+                      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);
+                      本节实验只用到了 PB 端口，所以要把 PB 端口的时钟打开。如果
+                      大家还想同时点亮其他两个 LED 发光二极管，那么还要把 PD 端口的
+                      时钟也打开。
+                      GPIO 管脚电平控制函数
+                      不管你用的是高端的 ARM 还是低端的单片机，也不管你用的是汇
+                      编语言还是 C 语言编，我们最终要达到的目的都是要控制 MCU 管脚的
+                      输入、输出状态，STM32 当然也不例外。下面介绍给大家两个函数。
+                      PB5 管脚输出高电平
+                      GPIO_SetBits(GPIOB,GPIO_Pin_5);
+                      PB5 管脚输出低电平
+                      GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+                      两个函数中传递的参数都是一样的，第一个参数是端口(GPIOB)，第二个参
+                      数是管脚序号(GPIO_Pin_5)。
+                       main.c 文件里的内容是
+                      #include "pbdata.h"//别忘了引用 pbdata.h 这个头文件
+                      void RCC_Configuration(void);//声明系统时钟初始化函数
+                      void GPIO_Configuration(void);//声明端口初始化函数
+                      int main(void)
+                      {
+                      RCC_Configuration(); //系统时钟初始化
+                      GPIO_Configuration();//端口初始化
+                      while(1)
+                      {
+                      //PB5 管脚输出高电平
+                      GPIO_SetBits(GPIOB,GPIO_Pin_5);
+                      delay(6000000);//间隔 0.5 秒钟
+                      //PB5 管脚输出低电平
+                      GPIO_ResetBits(GPIOB,GPIO_Pin_5);
+                      delay(6000000);//间隔 0.5 秒钟
+                      } }
+                      //定义系统时钟初始化函数
+                      void RCC_Configuration(void)
+                      {
+                      SystemInit();//初始化系统时钟
+                      RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//使能 PB
+                      端口时钟
+                      }
+                      //定义端口初始化函数
+                      void GPIO_Configuration(void)
+                      {
+                      GPIO_InitTypeDef GPIO_InitStructure;
+                      GPIO_InitStructure.GPIO_Pin=GPIO_Pin_5;//配置 GPIO_Pin_5 引脚
+                      GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;//引脚速率
+                      50MHz
+                      GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;//推挽输出
+                      GPIO_Init(GPIOB,&GPIO_InitStructure);//初始化 GPIOB.5 端口
+                      }
