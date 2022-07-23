@@ -1,0 +1,27 @@
+#include "pbdata.h"//别忘了引用 pbdata.h 这个头文件
+void RCC_Configuration(void);//声明系统时钟初始化函数
+void GPIO_Configuration(void);//声明端口初始化函数
+int main(void)
+{
+  RCC_Configuration(); //系统时钟初始化
+  GPIO_Configuration();//端口初始化
+while(1)
+{
+  //PB5 管脚输出高电平
+  GPIO_SetBits(GPIOB,GPIO_Pin_5);
+} }
+//定义系统时钟初始化函数
+void RCC_Configuration(void)
+{
+  SystemInit();//初始化系统时钟
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB,ENABLE);//使能PB端口时钟
+}
+//定义端口初始化函数
+void GPIO_Configuration(void)
+{
+  GPIO_InitTypeDef GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin=GPIO_Pin_5;//配置 GPIO_Pin_5 引脚
+  GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;//引脚速率50MHz
+  GPIO_InitStructure.GPIO_Mode=GPIO_Mode_Out_PP;//推挽输出
+  GPIO_Init(GPIOB,&GPIO_InitStructure);//初始化 GPIOB.5 端口
+}
